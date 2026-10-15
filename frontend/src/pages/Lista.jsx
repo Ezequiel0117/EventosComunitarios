@@ -1,61 +1,139 @@
-import { useEffect, useState } from 'react'
+
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import { api } from '../api'
+import EventCard from '../components/EventCard'
 
 export default function Lista() {
   const [eventos, setEventos] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
 
+  const cargar = useCallback(async () => {
+    setCargando(true)
+    setError('')
+
+    try {
+      const respuesta = await api.get('/registros')
+
+      if (!Array.isArray(respuesta.data)) {
+        throw new Error('Formato de respuesta inválido')
+      }
+
+      setEventos(respuesta.data)
+    } catch {
+      setError(
+        'No se pudieron consultar los eventos. Revisa la conexión e inténtalo de nuevo.'
+      )
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
   useEffect(() => {
-    const cargarEventos = async () => {
+    let activo = true
+
+    const obtenerEventos = async () => {
       try {
-        const respuesta = await axios.get('http://localhost:3000/registros')
-        setEventos(respuesta.data)
+        const respuesta = await api.get('/registros')
+
+        if (!Array.isArray(respuesta.data)) {
+          throw new Error('Formato de respuesta inválido')
+        }
+
+        if (activo) {
+          setEventos(respuesta.data)
+        }
       } catch {
-        setError('Error al cargar los eventos de la base de datos.')
+        if (activo) {
+          setError(
+            'No se pudieron consultar los eventos. Revisa la conexión e inténtalo de nuevo.'
+          )
+        }
       } finally {
-        setCargando(false)
+        if (activo) {
+          setCargando(false)
+        }
       }
     }
 
-    cargarEventos()
+    obtenerEventos()
+
+    return () => {
+      activo = false
+    }
   }, [])
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h2>Eventos Registrados</h2>
+    <section className="page-section">
+      <div className="container">
+        <div className="page-header list-heading">
+          <div>
+            <span className="eyebrow">Descubre lo que sucede</span>
+            <h1>Eventos de la comunidad</h1>
+            <p>
+              Consulta las actividades compartidas por los organizadores.
+            </p>
+          </div>
 
-      {cargando && <p>Cargando eventos...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+          <Link to="/registro" className="btn btn-primary">
+            + Registrar evento
+          </Link>
+        </div>
 
-      {!cargando && eventos.length === 0 && !error && (
-        <p>No hay eventos registrados aún. ¡Registra el primero!</p>
-      )}
+        {cargando && (
+          <div className="state-panel" role="status">
+            <h2>Cargando eventos…</h2>
+            <p>Consultando las actividades registradas.</p>
+          </div>
+        )}
 
-      {!cargando && eventos.length > 0 && (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {eventos.map((evento) => (
-            <li
-              key={evento.id}
-              style={{
-                border: '1px solid #ccc',
-                margin: '10px 0',
-                padding: '10px',
-                borderRadius: '5px',
-              }}
+        {!cargando && error && (
+          <div className="state-panel" role="alert">
+            <h2>Ocurrió un error</h2>
+            <p>{error}</p>
+            <button
+              className="btn btn-secondary"
+              onClick={cargar}
             >
-              <strong>Organizador:</strong> {evento.organizador} <br />
-              <strong>Descripción:</strong> {evento.descripcion} <br />
-              <strong>Fecha:</strong> {evento.fecha} <br />
-              <strong>Categoría:</strong> {evento.categoria}
-            </li>
-          ))}
-        </ul>
-      )}
+              Reintentar consulta
+            </button>
+          </div>
+        )}
 
-      <br />
-      <Link to="/">Volver al Inicio</Link>
-    </div>
+        {!cargando && !error && eventos.length === 0 && (
+          <div className="state-panel">
+            <h2>Aún no hay eventos</h2>
+            <p>
+              Este espacio está listo para recibir su primera actividad.
+            </p>
+            <Link to="/registro" className="btn btn-primary">
+              Registrar el primer evento →
+            </Link>
+          </div>
+        )}
+
+        {!cargando && !error && eventos.length > 0 && (
+          <>
+            <span className="list-count">
+              {eventos.length}{' '}
+              {eventos.length === 1
+                ? 'evento registrado'
+                : 'eventos registrados'}
+            </span>
+
+            <div className="event-grid">
+              {eventos.map((evento, index) => (
+                <EventCard
+                  key={evento.id}
+                  evento={evento}
+                  index={index}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </section>
   )
 }
