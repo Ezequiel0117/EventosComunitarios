@@ -82,6 +82,53 @@ Para detener cualquiera de los servidores, presiona `Ctrl + C` en su terminal.
 - Persistencia de datos en `backend/eventos.json`.
 - Comunicación entre frontend y backend habilitada mediante CORS.
 
+## Verificación frente a las instrucciones
+
+### Requisitos técnicos cumplidos
+
+- **Tema:** Eventos comunitarios, con organizador, descripción, fecha y
+  categoría.
+- **SPA React:** existen las rutas `/`, `/registro` y `/lista`.
+- **Estado del formulario:** el formulario se gestiona con `useState`.
+- **Petición HTTP:** Axios envía `POST /registros` y consulta
+  `GET /registros`.
+- **Estados de interfaz:** se muestran validación, confirmación, carga, error y
+  lista vacía.
+- **API REST:** Express implementa `GET /registros` y `POST /registros`.
+- **Respuestas HTTP:** se utilizan `200`, `201`, `400` y `500` según el caso.
+- **ID único:** el backend genera un ID para cada evento.
+- **CORS:** está habilitado para permitir la comunicación entre los dos
+  servidores locales.
+- **Persistencia:** los registros se guardan en `backend/eventos.json` sin
+  reemplazar los anteriores.
+- **Verificación realizada:** el frontend compila con `npm run build`, pasa
+  `npm run lint`, y se comprobó la consulta inicial de registros.
+
+### Aspectos que deben completarse o confirmarse para la entrega
+
+- La instrucción general menciona un campo **email**, pero el alcance
+  específico de **Eventos comunitarios** define los campos organizador,
+  descripción, fecha y categoría. Actualmente se implementa el alcance
+  específico; confirmen con el docente si también deben agregar email.
+- La validación actual comprueba que los campos no estén vacíos. Todavía no
+  valida explícitamente el formato de la fecha ni una fecha pertinente al
+  contexto.
+- Si el archivo JSON no puede leerse, el backend utiliza temporalmente una
+  lista vacía; actualmente no muestra un aviso específico ni recrea el archivo
+  automáticamente hasta guardar un registro.
+- Las vistas funcionan, pero todavía no se separaron componentes reutilizables
+  como menú, tarjeta de evento o componente de mensajes.
+- Después de registrar, el formulario muestra la confirmación y limpia sus
+  campos. La lista se actualiza al entrar nuevamente a `/lista` o recargarla;
+  si la rúbrica exige actualización inmediata sin cambiar de ruta, debe
+  agregarse esa lógica.
+- La conformación del grupo de exactamente cuatro estudiantes, la
+  exclusividad del tema, la captura del registro compartido, el informe, el
+  video y la exposición no pueden verificarse desde el código. Deben
+  completarse y adjuntarse como parte de la entrega.
+- También conviene demostrar en el video o informe el rechazo de un registro
+  incompleto y la persistencia después de reiniciar el backend.
+
 ## API
 
 ### Consultar eventos
